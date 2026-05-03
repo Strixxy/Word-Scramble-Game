@@ -82,6 +82,11 @@ function App() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [leaderboardMode, setLeaderboardMode] = useState('STANDARD');
 
+  // Easter Egg State
+  const [easterEggClicks, setEasterEggClicks] = useState(0);
+  const [easterEggActive, setEasterEggActive] = useState(false);
+  const [cheatWord, setCheatWord] = useState('');
+
   useEffect(() => {
     fetch(`${API}/categories`)
       .then(res => res.json())
@@ -124,6 +129,9 @@ function App() {
     setLives(3);
     setPlayedWordIds([]); // Reset seen words
     setPowerups({ magnet: 1, freeze: 1 });
+    setEasterEggClicks(0);
+    setEasterEggActive(false);
+    setCheatWord('');
     setScreen('game');
     await loadNextWord(0, []);
   };
@@ -165,12 +173,38 @@ function App() {
       const data = await res.json();
       setCurrentWord(data);
       setPlayedWordIds(prev => [...prev, data.wordId]); // Add to played list
+      if (easterEggActive) {
+        fetchCheatWord(data.wordId);
+      }
     } catch (e) {
       setFeedback({ text: '⚠️ Could not load word', type: 'wrong' });
     }
   };
 
-  const revealAnswerAndNext = async (reason, isTimeUp = false) => {
+  const fetchCheatWord = async (id) => {
+    try {
+      const res = await fetch(`${API}/reveal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wordId: id })
+      });
+      const data = await res.json();
+      setCheatWord(data.actualWord.toUpperCase());
+    } catch (e) {}
+  };
+
+  const handleEasterEggClick = () => {
+    if (easterEggActive) return;
+    const newClicks = easterEggClicks + 1;
+    setEasterEggClicks(newClicks);
+    if (newClicks >= 5) {
+      setEasterEggActive(true);
+      if (currentWord) fetchCheatWord(currentWord.wordId);
+      setFeedback({ text: '🤫 Easter Egg Activated!', type: 'hint' });
+    }
+  };
+
+  const revealAnswerAndNext = async (reason, isTimeUp = false, skipLifeDeduction = false) => {
     if (isRevealing) return;
     setIsRevealing(true);
     playSound(isTimeUp ? 'timeup' : 'wrong');
@@ -180,7 +214,7 @@ function App() {
     setStreak(0);
 
     let newLives = lives;
-    if (gameMode === 'SURVIVAL') {
+    if (gameMode === 'SURVIVAL' && !skipLifeDeduction) {
       newLives -= 1;
       setLives(newLives);
     }
@@ -277,8 +311,19 @@ function App() {
       } else {
         playSound('wrong');
         triggerShake();
-        setFeedback({ text: '❌ Wrong! Try again.', type: 'wrong' });
         setGuess('');
+        
+        if (gameMode === 'SURVIVAL') {
+          const newLives = lives - 1;
+          setLives(newLives);
+          if (newLives <= 0) {
+            revealAnswerAndNext("💀 Out of lives!", false, true);
+          } else {
+            setFeedback({ text: '❌ Wrong! (-1 Life)', type: 'wrong' });
+          }
+        } else {
+          setFeedback({ text: '❌ Wrong! Try again.', type: 'wrong' });
+        }
       }
     } catch (err) {
       setFeedback({ text: '⚠️ Network error', type: 'wrong' });
@@ -294,6 +339,7 @@ function App() {
   const useMagnet = async () => {
     if (powerups.magnet <= 0 || !currentWord || isRevealing) return;
     setPowerups(prev => ({ ...prev, magnet: 0 }));
+    setScore(prev => Math.max(0, prev - 50));
     try {
       const res = await fetch(`${API}/powerup`, {
         method: 'POST',
@@ -302,7 +348,7 @@ function App() {
       });
       const data = await res.json();
       setRevealedLetters(prev => ({ ...prev, [data.index]: data.letter }));
-      setFeedback({ text: `🧲 Magnet used!`, type: 'hint' });
+      setFeedback({ text: `🧲 Magnet used! (-50 pts)`, type: 'hint' });
     } catch (err) {
       console.error(err);
     }
@@ -311,8 +357,9 @@ function App() {
   const useFreeze = () => {
     if (powerups.freeze <= 0 || isRevealing) return;
     setPowerups(prev => ({ ...prev, freeze: 0 }));
+    setScore(prev => Math.max(0, prev - 50));
     setIsWordFrozen(true);
-    setFeedback({ text: `❄️ Timer Frozen!`, type: 'hint' });
+    setFeedback({ text: `❄️ Timer Frozen! (-50 pts)`, type: 'hint' });
     setTimeout(() => setIsWordFrozen(false), 5000);
   };
 
@@ -441,7 +488,10 @@ function App() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center min-h-screen p-6 max-w-2xl mx-auto">
         
         <div className="w-full flex justify-between items-center mb-6">
-          <div className="glass-surface px-4 py-1.5 rounded-full border border-white/10 font-bold text-[10px] uppercase tracking-wider text-[var(--color-muted)]">
+          <div 
+            onClick={handleEasterEggClick}
+            className="glass-surface px-4 py-1.5 rounded-full border border-white/10 font-bold text-[10px] uppercase tracking-wider text-[var(--color-muted)] cursor-pointer hover:bg-white/5 transition-colors select-none"
+          >
             {gameMode} MODE
           </div>
           <button onClick={endGameEarly} className="text-[var(--color-muted)] hover:text-[var(--color-pink)] flex items-center gap-2 text-sm font-bold glass-surface px-4 py-2 rounded-xl transition-all">
@@ -607,7 +657,14 @@ function App() {
           <input 
             type="text" 
             value={guess}
-            onChange={e => setGuess(e.target.value.toUpperCase())}
+            onChange={e => {
+              const val = e.target.value.toUpperCase();
+              if (easterEggActive && cheatWord) {
+                setGuess(cheatWord.substring(0, val.length));
+              } else {
+                setGuess(val);
+              }
+            }}
             placeholder="TYPE ANSWER..."
             disabled={isRevealing}
             className="flex-1 glass-surface border-2 border-white/20 rounded-2xl p-5 text-center text-2xl tracking-[0.2em] uppercase font-boogaloo outline-none focus:border-[var(--color-accent)] disabled:opacity-50 shadow-inner"

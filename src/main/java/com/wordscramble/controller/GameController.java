@@ -154,11 +154,10 @@ public class GameController {
         Map<String, Object> response = new HashMap<>();
 
         if ("MAGNET".equals(type)) {
-            // Pick a random letter from the original word
+            // Reveal the first letter of the original word
             String original = word.getOriginal();
-            int randomIndex = new Random().nextInt(original.length());
-            response.put("index", randomIndex);
-            response.put("letter", String.valueOf(original.charAt(randomIndex)).toUpperCase());
+            response.put("index", 0);
+            response.put("letter", String.valueOf(original.charAt(0)).toUpperCase());
         }
 
         return ResponseEntity.ok(response);

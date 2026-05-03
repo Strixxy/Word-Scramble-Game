@@ -6,6 +6,9 @@ import java.util.List;
 
 public interface ScoreRepository extends JpaRepository<Score, Long> {
 
-    // Top 10 scores, highest first
+    // Top 10 scores, highest first (all modes, legacy)
     List<Score> findTop10ByOrderByScoreDesc();
+
+    // Top 10 scores by game mode
+    List<Score> findTop10ByGameModeOrderByScoreDesc(String gameMode);
 }

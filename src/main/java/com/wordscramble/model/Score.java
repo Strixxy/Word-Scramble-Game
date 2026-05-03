@@ -14,6 +14,7 @@ public class Score {
     private int score;          // total points
     private int wordsCorrect;   // how many words guessed right
     private int totalWords;     // total words attempted
+    private String gameMode;    // e.g., "STANDARD" or "SURVIVAL"
 
     private LocalDateTime playedAt;
 
@@ -28,6 +29,7 @@ public class Score {
     public int getScore()           { return score; }
     public int getWordsCorrect()    { return wordsCorrect; }
     public int getTotalWords()      { return totalWords; }
+    public String getGameMode()     { return gameMode; }
     public LocalDateTime getPlayedAt() { return playedAt; }
 
     // ── Setters ──────────────────────────────────
@@ -36,5 +38,6 @@ public class Score {
     public void setScore(int score)              { this.score = score; }
     public void setWordsCorrect(int wordsCorrect){ this.wordsCorrect = wordsCorrect; }
     public void setTotalWords(int totalWords)    { this.totalWords = totalWords; }
+    public void setGameMode(String gameMode)     { this.gameMode = gameMode; }
     public void setPlayedAt(LocalDateTime playedAt) { this.playedAt = playedAt; }
 }

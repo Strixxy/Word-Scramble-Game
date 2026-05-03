@@ -12,20 +12,20 @@ public interface WordRepository extends JpaRepository<Word, Long> {
     List<Word> findByCategory(String category);
 
     // Get a random word (any category)
-    @Query(value = "SELECT * FROM word ORDER BY RAND() LIMIT 1", nativeQuery = true)
-    Word findRandomWord();
+    @Query(value = "SELECT * FROM word WHERE id NOT IN :excludeIds ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    Word findRandomWord(@Param("excludeIds") List<Long> excludeIds);
 
     // Get a random word by category
-    @Query(value = "SELECT * FROM word WHERE category = :category ORDER BY RAND() LIMIT 1", nativeQuery = true)
-    Word findRandomWordByCategory(@Param("category") String category);
+    @Query(value = "SELECT * FROM word WHERE category = :category AND id NOT IN :excludeIds ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    Word findRandomWordByCategory(@Param("category") String category, @Param("excludeIds") List<Long> excludeIds);
 
     // Get a random word by difficulty
-    @Query(value = "SELECT * FROM word WHERE difficulty = :difficulty ORDER BY RAND() LIMIT 1", nativeQuery = true)
-    Word findRandomWordByDifficulty(@Param("difficulty") String difficulty);
+    @Query(value = "SELECT * FROM word WHERE difficulty = :difficulty AND id NOT IN :excludeIds ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    Word findRandomWordByDifficulty(@Param("difficulty") String difficulty, @Param("excludeIds") List<Long> excludeIds);
 
     // Get a random word by category and difficulty
-    @Query(value = "SELECT * FROM word WHERE category = :category AND difficulty = :difficulty ORDER BY RAND() LIMIT 1", nativeQuery = true)
-    Word findRandomWordByCategoryAndDifficulty(@Param("category") String category, @Param("difficulty") String difficulty);
+    @Query(value = "SELECT * FROM word WHERE category = :category AND difficulty = :difficulty AND id NOT IN :excludeIds ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    Word findRandomWordByCategoryAndDifficulty(@Param("category") String category, @Param("difficulty") String difficulty, @Param("excludeIds") List<Long> excludeIds);
 
     // Get distinct categories
     @Query("SELECT DISTINCT w.category FROM Word w")

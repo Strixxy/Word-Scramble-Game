@@ -2,8 +2,8 @@
 
 @theme {
   --color-bg: #0f0e17;
-  --color-surface: #1a1928;
-  --color-card: #22213a;
+  --color-surface: rgba(26, 25, 40, 0.7);
+  --color-card: rgba(34, 33, 58, 0.6);
   --color-accent: #ff6b35;
   --color-yellow: #ffd166;
   --color-green: #06d6a0;
@@ -18,30 +18,73 @@
 
 body {
   font-family: var(--font-nunito);
-  background-color: var(--color-bg);
   color: var(--color-text);
   min-height: 100vh;
+  margin: 0;
   overflow-x: hidden;
+  
+  /* Animated Deep Gradient Background */
+  background: linear-gradient(-45deg, #0f0e17, #1a1928, #2a1b38, #111a2f);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
 }
 
-/* Background bubbles */
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.font-boogaloo {
+  font-family: var(--font-boogaloo);
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--color-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-surface {
+  background: var(--color-surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Floating Particles */
 body::before {
+  content: '';
+  position: fixed;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,107,53,0.15) 0%, transparent 60%);
+  top: -150px; right: -150px;
+  pointer-events: none;
+  z-index: -1;
+  animation: float1 10s ease-in-out infinite alternate;
+}
+
+body::after {
   content: '';
   position: fixed;
   width: 500px; height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 70%);
-  top: -100px; right: -100px;
+  background: radial-gradient(circle, rgba(6,214,160,0.12) 0%, transparent 60%);
+  bottom: -150px; left: -100px;
   pointer-events: none;
   z-index: -1;
+  animation: float2 12s ease-in-out infinite alternate;
 }
-body::after {
-  content: '';
-  position: fixed;
-  width: 400px; height: 400px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(6,214,160,0.07) 0%, transparent 70%);
-  bottom: -100px; left: -100px;
-  pointer-events: none;
-  z-index: -1;
+
+@keyframes float1 {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(50px) scale(1.1); }
+}
+@keyframes float2 {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-40px) scale(1.05); }
 }

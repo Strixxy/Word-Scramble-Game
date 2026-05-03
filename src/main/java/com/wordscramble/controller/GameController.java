@@ -36,11 +36,22 @@ public class GameController {
     // ─────────────────────────────────────────────
     @GetMapping("/word")
     public ResponseEntity<Map<String, Object>> getWord(
-            @RequestParam(required = false) String category) {
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String difficulty) {
 
-        Word word = (category == null || category.isBlank())
-                ? wordRepository.findRandomWord()
-                : wordRepository.findRandomWordByCategory(category);
+        Word word;
+        boolean hasCat = (category != null && !category.isBlank());
+        boolean hasDiff = (difficulty != null && !difficulty.isBlank());
+
+        if (hasCat && hasDiff) {
+            word = wordRepository.findRandomWordByCategoryAndDifficulty(category, difficulty);
+        } else if (hasCat) {
+            word = wordRepository.findRandomWordByCategory(category);
+        } else if (hasDiff) {
+            word = wordRepository.findRandomWordByDifficulty(difficulty);
+        } else {
+            word = wordRepository.findRandomWord();
+        }
 
         if (word == null) {
             return ResponseEntity.notFound().build();
@@ -50,6 +61,7 @@ public class GameController {
         response.put("wordId",    word.getId());
         response.put("scrambled", scramble(word.getOriginal()));
         response.put("category",  word.getCategory());
+        response.put("difficulty", word.getDifficulty());
         response.put("hint1",     word.getHint1());
         response.put("hint2",     word.getHint2());
         response.put("length",    word.getOriginal().length());
@@ -105,6 +117,37 @@ public class GameController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("actualWord", optWord.get().getOriginal());
+        return ResponseEntity.ok(response);
+    }
+
+    // ─────────────────────────────────────────────
+    // POST /api/game/powerup
+    // Body: { "wordId": 3, "type": "MAGNET" }
+    // Returns powerup payload
+    // ─────────────────────────────────────────────
+    @PostMapping("/powerup")
+    public ResponseEntity<Map<String, Object>> usePowerup(
+            @RequestBody Map<String, Object> body) {
+
+        Long wordId = Long.valueOf(body.get("wordId").toString());
+        String type = body.get("type").toString().toUpperCase();
+
+        Optional<Word> optWord = wordRepository.findById(wordId);
+        if (optWord.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Word word = optWord.get();
+        Map<String, Object> response = new HashMap<>();
+
+        if ("MAGNET".equals(type)) {
+            // Pick a random letter from the original word
+            String original = word.getOriginal();
+            int randomIndex = new Random().nextInt(original.length());
+            response.put("index", randomIndex);
+            response.put("letter", String.valueOf(original.charAt(randomIndex)).toUpperCase());
+        }
+
         return ResponseEntity.ok(response);
     }
 

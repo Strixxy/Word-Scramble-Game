@@ -1,0 +1,6 @@
+com\wordscramble\repository\ScoreRepository.class
+com\wordscramble\controller\GameController.class
+com\wordscramble\WordScrambleApplication.class
+com\wordscramble\model\Word.class
+com\wordscramble\model\Score.class
+com\wordscramble\repository\WordRepository.class

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, RefreshCw, Lightbulb, Magnet, SearchX, Home, SkipForward, XCircle, Heart, Star } from 'lucide-react';
 
-const API = 'http://localhost:8080/api/game';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API = `${API_BASE}/api/game`;
 const TIME_PER_WORD = 30;
 const BASE_POINTS = 200;
 const HINT_PENALTY = 50;

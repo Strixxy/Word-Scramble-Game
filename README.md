@@ -8,6 +8,7 @@
 
   <!-- Badges -->
   <p>
+    <a href="https://word-scramble-game.up.railway.app/"><img src="https://img.shields.io/badge/Live-Demo-brightgreen.svg" alt="Live Demo" /></a>
     <img src="https://img.shields.io/badge/Java-17-orange.svg" alt="Java 17" />
     <img src="https://img.shields.io/badge/Spring_Boot-3.2-6DB33F.svg?logo=spring" alt="Spring Boot" />
     <img src="https://img.shields.io/badge/React-Vite-61DAFB.svg?logo=react" alt="React Vite" />
